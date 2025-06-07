@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Î»ÖÃ¿ÕÆøÖÊÁ¿ÆÀ¼¶ÏµÍ³</title>
+    <title>ä½ç½®ç©ºæ°”è´¨é‡è¯„çº§ç³»ç»Ÿ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
-    <!-- ÅäÖÃTailwind×Ô¶¨ÒåÑÕÉ« -->
+    <!-- é…ç½®Tailwindè‡ªå®šä¹‰é¢œè‰² -->
     <script>
         tailwind.config = {
             theme: {
@@ -32,7 +32,7 @@
         }
     </script>
     
-    <!-- ×Ô¶¨Òå¹¤¾ßÀà -->
+    <!-- è‡ªå®šä¹‰å·¥å…·ç±» -->
     <style type="text/tailwindcss">
         @layer utilities {
             .content-auto {
@@ -145,28 +145,28 @@
     </style>
 </head>
 <body class="font-sans h-screen overflow-hidden">
-    <!-- ¶¥²¿µ¼º½À¸ -->
+    <!-- é¡¶éƒ¨å¯¼èˆªæ  -->
     <header class="header bg-gray-50 header-shadow transition-all duration-300 z-50" id="header">
         <div class="header-top flex justify-between items-center px-4 h-10">
             <button class="toggle-header-btn text-gray-700" onclick="toggleHeader()">
                 <i class="fa fa-bars"></i>
             </button>
-            <h1 class="text-lg font-bold text-gray-800">Î»ÖÃ¿ÕÆøÖÊÁ¿ÆÀ¼¶ÏµÍ³</h1>
+            <h1 class="text-lg font-bold text-gray-800">ä½ç½®ç©ºæ°”è´¨é‡è¯„çº§ç³»ç»Ÿ</h1>
         </div>
         <div class="header-content px-4 py-2 transition-all duration-300">
             <div class="flex flex-wrap gap-2">
                 <button class="primary-btn bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="showRatingModal()">
-                    <i class="fa fa-plus"></i> Ìí¼ÓĞÂÎ»ÖÃ
+                    <i class="fa fa-plus"></i> æ·»åŠ æ–°ä½ç½®
                 </button>
                 <button class="info-btn bg-info text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="exportToExcel()">
-                    <i class="fa fa-file-excel-o"></i> µ¼³öExcel
+                    <i class="fa fa-file-excel-o"></i> å¯¼å‡ºExcel
                 </button>
                 <button class="danger-btn bg-danger text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="clearStorage()">
-                    <i class="fa fa-trash"></i> Çå¿ÕÊı¾İ
+                    <i class="fa fa-trash"></i> æ¸…ç©ºæ•°æ®
                 </button>
                 <input type="file" id="fileInput" accept=".xlsx" className="hidden" onchange="importFromExcel()" />
                 <button class="info-btn bg-info text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="document.getElementById('fileInput').click()">
-                    <i class="fa fa-file-import"></i> µ¼ÈëÊı¾İ
+                    <i class="fa fa-file-import"></i> å¯¼å…¥æ•°æ®
                 </button>
             </div>
         </div>
@@ -174,104 +174,104 @@
     <button id="showSidebarBtn" class="fixed top-16 left-2 z-50 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md" style="display:none;" onclick="showSidebar()">
         <i class="fa fa-bars"></i>
     </button>
-    <!-- Ö÷ÈİÆ÷ -->
+    <!-- ä¸»å®¹å™¨ -->
     <div id="mainContainer" class="flex h-screen overflow-hidden">
-        <!-- ²à±ßÀ¸ -->
+        <!-- ä¾§è¾¹æ  -->
         <aside class="sidebar bg-gray-50 sidebar-shadow transition-all duration-300 w-72 lg:w-80 z-40 h-full flex flex-col " id="sidebar">
             <button class="sidebar-toggle" onclick="toggleSidebar()">
                 <i class="fas fa-chevron-left"></i>
             </button>
             <span class="collapsed-tooltip absolute left-[calc(100%+10px)] top-3 bg-white px-3 py-1 rounded-md shadow-lg text-sm opacity-0 pointer-events-none transition-opacity duration-200">
-                Õ¹¿ª²à±ßÀ¸
+                å±•å¼€ä¾§è¾¹æ 
             </span>
 
             <div class="sidebar-content p-4 h-full overflow-y-auto scrollbar-thin transition-all duration-300" id="sidebarContent">
-                <!-- µØÍ¼ÀàĞÍÑ¡Ôñ -->
+                <!-- åœ°å›¾ç±»å‹é€‰æ‹© -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">µØÍ¼ÀàĞÍ</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">åœ°å›¾ç±»å‹</h3>
                     <div class="space-y-2">
                         <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('streets')">
-                            <i class="fa fa-map"></i> ½ÖµÀµØÍ¼
+                            <i class="fa fa-map"></i> è¡—é“åœ°å›¾
                         </button>
                         <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('satellite')">
-                            <i class="fa fa-satellite"></i> ÎÀĞÇµØÍ¼
+                            <i class="fa fa-satellite"></i> å«æ˜Ÿåœ°å›¾
                         </button>
                         <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('outdoors')">
-                            <i class="fa fa-mountain"></i> µØĞÎÍ¼
+                            <i class="fa fa-mountain"></i> åœ°å½¢å›¾
                         </button>
                     </div>
                 </div>
 
-                <!-- Êı¾İÍ³¼Æ -->
+                <!-- æ•°æ®ç»Ÿè®¡ -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Êı¾İÍ³¼Æ</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">æ•°æ®ç»Ÿè®¡</h3>
                     <div class="stats-container space-y-2" id="statsContainer">
-                        <p class="text-gray-600">ÔİÎŞÍ³¼ÆÊı¾İ</p>
+                        <p class="text-gray-600">æš‚æ— ç»Ÿè®¡æ•°æ®</p>
                     </div>
                 </div>
 
-                <!-- Í¼Àı -->
+                <!-- å›¾ä¾‹ -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Í¼Àı</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">å›¾ä¾‹</h3>
                     <div class="legend flex flex-wrap gap-3">
                         <div class="legend-item flex items-center">
                             <div class="legend-color rating-A w-4 h-4 rounded-sm mr-2"></div>
-                            <span>A¼¶</span>
+                            <span>Açº§</span>
                         </div>
                         <div class="legend-item flex items-center">
                             <div class="legend-color rating-B w-4 h-4 rounded-sm mr-2"></div>
-                            <span>B¼¶</span>
+                            <span>Bçº§</span>
                         </div>
                         <div class="legend-item flex items-center">
                             <div class="legend-color rating-C w-4 h-4 rounded-sm mr-2"></div>
-                            <span>C¼¶</span>
+                            <span>Cçº§</span>
                         </div>
                         <div class="legend-item flex items-center">
                             <div class="legend-color rating-D w-4 h-4 rounded-sm mr-2"></div>
-                            <span>D¼¶</span>
+                            <span>Dçº§</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- ÈÈÁ¦Í¼¿ØÖÆ -->
+                <!-- çƒ­åŠ›å›¾æ§åˆ¶ -->
                 <div class="mb-6 bg-gray-100 p-4 rounded-lg">
                     <button class="warning-btn bg-warning text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-center mb-4 btn-hover" onclick="toggle3DView()">
-                        <i class="fa fa-cube"></i> ÇĞ»»3DÊÓÍ¼
+                        <i class="fa fa-cube"></i> åˆ‡æ¢3Dè§†å›¾
                     </button>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">ÈÈÁ¦Í¼¿ØÖÆ</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">çƒ­åŠ›å›¾æ§åˆ¶</h3>
                     <button class="danger-btn bg-danger text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-center mb-4 btn-hover" onclick="toggleHeatmap()">
-                        <i class="fa fa-fire"></i> ÇĞ»»ÈÈÁ¦Í¼
+                        <i class="fa fa-fire"></i> åˆ‡æ¢çƒ­åŠ›å›¾
                     </button>
                     <div class="space-y-4">
                         <div class="flex items-center">
-                            <label class="text-gray-700 w-24">ÈÈÁ¦Í¼Ç¿¶È:</label>
+                            <label class="text-gray-700 w-24">çƒ­åŠ›å›¾å¼ºåº¦:</label>
                             <input type="range" id="heatmapIntensity" min="1" max="20" value="10" class="flex-1 mx-2" onchange="updateHeatmap()">
                             <span id="intensityValue" class="text-gray-700 w-8 text-center">10</span>
                         </div>
                         <div class="flex items-center">
-                            <label class="text-gray-700 w-24">ÈÈÁ¦Í¼°ë¾¶:</label>
+                            <label class="text-gray-700 w-24">çƒ­åŠ›å›¾åŠå¾„:</label>
                             <input type="range" id="heatmapRadius" min="5" max="50" value="25" class="flex-1 mx-2" onchange="updateHeatmap()">
                             <span id="radiusValue" class="text-gray-700 w-8 text-center">25</span>
                         </div>
                         <div class="flex items-center">
-                            <label class="text-gray-700 w-24">ÈÈÁ¦Í¼Í¸Ã÷¶È:</label>
+                            <label class="text-gray-700 w-24">çƒ­åŠ›å›¾é€æ˜åº¦:</label>
                             <input type="range" id="heatmapOpacity" min="0" max="100" value="70" class="flex-1 mx-2" onchange="updateHeatmap()">
                             <span id="opacityValue" class="text-gray-700 w-8 text-center">70%</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Î»ÖÃÁĞ±í -->
+                <!-- ä½ç½®åˆ—è¡¨ -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Î»ÖÃÁĞ±í</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">ä½ç½®åˆ—è¡¨</h3>
                     <div class="location-list space-y-2" id="locationList">
-                        <p class="text-gray-600">ÔİÎŞÎ»ÖÃÊı¾İ</p>
+                        <p class="text-gray-600">æš‚æ— ä½ç½®æ•°æ®</p>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- µØÍ¼ÈİÆ÷ -->
+        <!-- åœ°å›¾å®¹å™¨ -->
         <main class="map-container flex-1 relative h-full" id="mapContainer">
             <div id="map" class="w-full h-full"></div>
             <div id="3d-control" class="map-control-btn absolute right-4 bottom-8 bg-white w-8 h-8 rounded-md flex items-center justify-center shadow-md cursor-pointer z-10 hover:bg-gray-100 transition-colors">
@@ -280,14 +280,14 @@
         </main>
     </div>
 
-    <!-- ÆÀ¼¶Ä£Ì¬¿ò -->
+    <!-- è¯„çº§æ¨¡æ€æ¡† -->
     <div id="ratingModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
             <button class="close absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal()">
                 <i class="fa fa-times"></i>
             </button>
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Ìí¼ÓĞÂÎ»ÖÃÆÀ¼¶</h2>
-            <p id="modalMessage" class="text-gray-600 mb-6">ÕıÔÚ»ñÈ¡ÄúµÄÎ»ÖÃ...</p>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">æ·»åŠ æ–°ä½ç½®è¯„çº§</h2>
+            <p id="modalMessage" class="text-gray-600 mb-6">æ­£åœ¨è·å–æ‚¨çš„ä½ç½®...</p>
 
             <div class="rating-options flex justify-center my-6" id="ratingOptions" style="display: none;">
                 <button class="rating-btn rating-A w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md mr-2 transition-all hover:scale-110 active:scale-95" onclick="selectRating('A')">A</button>
@@ -297,20 +297,20 @@
             </div>
 
             <div id="locationPreview" class="bg-gray-50 p-4 rounded-lg my-4" style="display: none;">
-                <p class="text-sm text-gray-600"><strong>Î³¶È:</strong> <span id="previewLat"></span></p>
-                <p class="text-sm text-gray-600"><strong>¾­¶È:</strong> <span id="previewLng"></span></p>
-                <p class="text-sm text-gray-600"><strong>¾«È·¶È:</strong> ¡À<span id="previewAcc"></span> Ã×</p>
+                <p class="text-sm text-gray-600"><strong>çº¬åº¦:</strong> <span id="previewLat"></span></p>
+                <p class="text-sm text-gray-600"><strong>ç»åº¦:</strong> <span id="previewLng"></span></p>
+                <p class="text-sm text-gray-600"><strong>ç²¾ç¡®åº¦:</strong> Â±<span id="previewAcc"></span> ç±³</p>
             </div>
 
             <button id="confirmBtn" class="primary-btn bg-primary text-white px-6 py-3 rounded-md flex items-center gap-2 mx-auto mt-4 hidden btn-hover" onclick="saveLocationWithRating()">
-                <i class="fa fa-check"></i> È·ÈÏ±£´æ
+                <i class="fa fa-check"></i> ç¡®è®¤ä¿å­˜
             </button>
         </div>
     </div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <script>
-        // ³õÊ¼»¯±äÁ¿
+        // åˆå§‹åŒ–å˜é‡
         let map;
         let locationData = JSON.parse(localStorage.getItem('locationData')) || [];
         let markers = [];
@@ -323,10 +323,10 @@
         let selectedRating = null;
         let currentPosition = null;
 
-        // Mapbox·ÃÎÊÁîÅÆ - ÇëÌæ»»ÎªÄú×Ô¼ºµÄ
+        // Mapboxè®¿é—®ä»¤ç‰Œ - è¯·æ›¿æ¢ä¸ºæ‚¨è‡ªå·±çš„
         mapboxgl.accessToken = 'pk.eyJ1IjoiazhhdDl6Z28iLCJhIjoiY21hY2h5Mm5tMDNpejJtcXZxYW9kbzA4YyJ9.w4RIBZJv5DOmzfVZQ_FpXw';
 
-        // ³õÊ¼»¯µØÍ¼
+        // åˆå§‹åŒ–åœ°å›¾
         function initMap() {
             map = new mapboxgl.Map({
                 container: 'map',
@@ -336,15 +336,15 @@
                 pitch: 0
             });
 
-            // Ìí¼Óµ¼º½¿Ø¼ş
+            // æ·»åŠ å¯¼èˆªæ§ä»¶
             map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-            // 3DÊÓÍ¼ÇĞ»»°´Å¥ÊÂ¼ş
+            // 3Dè§†å›¾åˆ‡æ¢æŒ‰é’®äº‹ä»¶
             document.getElementById('3d-control').addEventListener('click', toggle3DView);
 
-            // µØÍ¼¼ÓÔØÍê³Éºó
+            // åœ°å›¾åŠ è½½å®Œæˆå
             map.on('load', () => {
-                // ³õÊ¼»¯ÈÈÁ¦Í¼Êı¾İÔ´
+                // åˆå§‹åŒ–çƒ­åŠ›å›¾æ•°æ®æº
                 map.addSource('heatmap-source', {
                     type: 'geojson',
                     data: {
@@ -353,7 +353,7 @@
                     }
                 });
 
-                // ³õÊ¼»¯ÈÈÁ¦Í¼²ã
+                // åˆå§‹åŒ–çƒ­åŠ›å›¾å±‚
                 map.addLayer({
                     id: 'heatmap-layer',
                     type: 'heatmap',
@@ -383,10 +383,10 @@
                     }
                 });
 
-                // Ä¬ÈÏ²»ÏÔÊ¾ÈÈÁ¦Í¼
+                // é»˜è®¤ä¸æ˜¾ç¤ºçƒ­åŠ›å›¾
                 map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
 
-                // ³õÊ¼»¯Öù×´Í¼Êı¾İÔ´
+                // åˆå§‹åŒ–æŸ±çŠ¶å›¾æ•°æ®æº
                 map.addSource('bar-chart-source', {
                     type: 'geojson',
                     data: {
@@ -395,7 +395,7 @@
                     }
                 });
 
-                // ³õÊ¼»¯Öù×´Í¼²ã
+                // åˆå§‹åŒ–æŸ±çŠ¶å›¾å±‚
                 map.addLayer({
                     id: 'bar-chart-layer',
                     type: 'fill-extrusion',
@@ -419,25 +419,25 @@
                     }
                 });
 
-                // ¼ÓÔØÒÑÓĞÊı¾İ
+                // åŠ è½½å·²æœ‰æ•°æ®
                 loadLocationData();
                 updateToggleButtons();
             });
         }
 
-        // ¼ÓÔØÎ»ÖÃÊı¾İµ½µØÍ¼
+        // åŠ è½½ä½ç½®æ•°æ®åˆ°åœ°å›¾
         function loadLocationData() {
-            // Çå³ıÏÖÓĞ±ê¼Ç
+            // æ¸…é™¤ç°æœ‰æ ‡è®°
             markers.forEach(marker => marker.remove());
             markers = [];
 
             if (locationData.length === 0) {
-                document.getElementById('statsContainer').innerHTML = '<p class="text-gray-600">ÔİÎŞÍ³¼ÆÊı¾İ</p>';
-                document.getElementById('locationList').innerHTML = '<p class="text-gray-600">ÔİÎŞÎ»ÖÃÊı¾İ</p>';
+                document.getElementById('statsContainer').innerHTML = '<p class="text-gray-600">æš‚æ— ç»Ÿè®¡æ•°æ®</p>';
+                document.getElementById('locationList').innerHTML = '<p class="text-gray-600">æš‚æ— ä½ç½®æ•°æ®</p>';
                 return;
             }
 
-            // ´´½¨±ê¼Ç²¢Ìí¼Óµ½µØÍ¼
+            // åˆ›å»ºæ ‡è®°å¹¶æ·»åŠ åˆ°åœ°å›¾
             locationData.forEach(location => {
                 const el = document.createElement('div');
                 el.className = 'marker rounded-full border-2 border-white cursor-pointer transition-all hover:scale-125';
@@ -445,40 +445,40 @@
                 el.style.width = '16px';
                 el.style.height = '16px';
 
-                // ´´½¨µ¯³ö´°¿ÚÄÚÈİ
+                // åˆ›å»ºå¼¹å‡ºçª—å£å†…å®¹
                 const stats = getRatingStatsInRadius(location.latitude, location.longitude);
                 const popupContent = `
                         <div class="p-2">
-                            <div class="font-bold text-gray-800 mb-1">Î»ÖÃÆÀ¼¶:
+                            <div class="font-bold text-gray-800 mb-1">ä½ç½®è¯„çº§:
                                 <span class="rating-${location.rating} inline-block w-4 h-4 rounded-sm align-middle ml-1"></span>
-                                ${location.rating}¼¶
+                                ${location.rating}çº§
                             </div>
                             <div class="text-sm text-gray-600">
-                                <p>Î³¶È: ${location.latitude}</p>
-                                <p>¾­¶È: ${location.longitude}</p>
-                                <p>Ê±¼ä: ${location.timestamp}</p>
+                                <p>çº¬åº¦: ${location.latitude}</p>
+                                <p>ç»åº¦: ${location.longitude}</p>
+                                <p>æ—¶é—´: ${location.timestamp}</p>
                             </div>
                             <div class="radius-stats mt-2 bg-gray-50 p-2 rounded">
-                                <h4 class="font-medium text-gray-800 text-sm mb-1">500Ã×°ë¾¶ÄÚÍ³¼Æ:</h4>
+                                <h4 class="font-medium text-gray-800 text-sm mb-1">500ç±³åŠå¾„å†…ç»Ÿè®¡:</h4>
                                 <div class="radius-stat-item rating-A text-xs">
-                                    <span><span class="rating-A inline-block w-3 h-3 rounded-sm mr-1"></span> A¼¶:</span>
-                                    <span>${stats.A}´Î</span>
+                                    <span><span class="rating-A inline-block w-3 h-3 rounded-sm mr-1"></span> Açº§:</span>
+                                    <span>${stats.A}æ¬¡</span>
                                 </div>
                                 <div class="radius-stat-item rating-B text-xs">
-                                    <span><span class="rating-B inline-block w-3 h-3 rounded-sm mr-1"></span> B¼¶:</span>
-                                    <span>${stats.B}´Î</span>
+                                    <span><span class="rating-B inline-block w-3 h-3 rounded-sm mr-1"></span> Bçº§:</span>
+                                    <span>${stats.B}æ¬¡</span>
                                 </div>
                                 <div class="radius-stat-item rating-C text-xs">
-                                    <span><span class="rating-C inline-block w-3 h-3 rounded-sm mr-1"></span> C¼¶:</span>
-                                    <span>${stats.C}´Î</span>
+                                    <span><span class="rating-C inline-block w-3 h-3 rounded-sm mr-1"></span> Cçº§:</span>
+                                    <span>${stats.C}æ¬¡</span>
                                 </div>
                                 <div class="radius-stat-item rating-D text-xs">
-                                    <span><span class="rating-D inline-block w-3 h-3 rounded-sm mr-1"></span> D¼¶:</span>
-                                    <span>${stats.D}´Î</span>
+                                    <span><span class="rating-D inline-block w-3 h-3 rounded-sm mr-1"></span> Dçº§:</span>
+                                    <span>${stats.D}æ¬¡</span>
                                 </div>
                                 <div class="radius-stat-item text-xs">
-                                    <span>×Ü¼Æ:</span>
-                                    <span>${stats.total}´Î</span>
+                                    <span>æ€»è®¡:</span>
+                                    <span>${stats.total}æ¬¡</span>
                                 </div>
                             </div>
                         </div>
@@ -491,30 +491,30 @@
 
                 markers.push(marker);
 
-                // µã»÷±ê¼ÇÊ±ÏÔÊ¾500Ã×°ë¾¶·¶Î§ºÍÖù×´Í¼
+                // ç‚¹å‡»æ ‡è®°æ—¶æ˜¾ç¤º500ç±³åŠå¾„èŒƒå›´å’ŒæŸ±çŠ¶å›¾
                 el.addEventListener('click', () => {
                     showBarChart(location.latitude, location.longitude);
                 });
             });
 
-            // ¸üĞÂÈÈÁ¦Í¼Êı¾İ
+            // æ›´æ–°çƒ­åŠ›å›¾æ•°æ®
             updateHeatmap();
             updateLocationList();
             updateStats();
         }
 
-        // ÏÔÊ¾Öù×´Í¼
+        // æ˜¾ç¤ºæŸ±çŠ¶å›¾
         function showBarChart(lat, lng) {
-            // ÒÆ³ıÏÖÓĞµÄ°ë¾¶Ô²ºÍÖù×´Í¼
+            // ç§»é™¤ç°æœ‰çš„åŠå¾„åœ†å’ŒæŸ±çŠ¶å›¾
             if (radiusCircle) {
                 map.removeLayer(radiusCircle);
                 map.removeSource('radius-circle');
             }
 
-            // Òş²ØÖ®Ç°µÄÖù×´Í¼
+            // éšè—ä¹‹å‰çš„æŸ±çŠ¶å›¾
             map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
 
-            // Ìí¼ÓĞÂµÄ°ë¾¶Ô²
+            // æ·»åŠ æ–°çš„åŠå¾„åœ†
             map.addSource('radius-circle', {
                 type: 'geojson',
                 data: {
@@ -546,21 +546,21 @@
                 }
             });
 
-            // ¾ÓÖĞÏÔÊ¾
+            // å±…ä¸­æ˜¾ç¤º
             map.flyTo({
                 center: [lng, lat],
                 zoom: 15
             });
 
-            // »ñÈ¡Í³¼ÆÊı¾İ
+            // è·å–ç»Ÿè®¡æ•°æ®
             const stats = getRatingStatsInRadius(lat, lng);
 
             if (stats.total === 0) return;
 
-            // ´´½¨Öù×´Í¼Êı¾İ
+            // åˆ›å»ºæŸ±çŠ¶å›¾æ•°æ®
             const barWidth = 0.0008;
             const maxCount = Math.max(stats.A, stats.B, stats.C, stats.D);
-            const scaleFactor = maxCount > 0 ? 200 / maxCount : 1; // Ëõ·ÅÒò×Ó£¬Ê¹×î¸ßÖùÎª200Ã×
+            const scaleFactor = maxCount > 0 ? 200 / maxCount : 1; // ç¼©æ”¾å› å­ï¼Œä½¿æœ€é«˜æŸ±ä¸º200ç±³
 
             const features = [
                 createBarFeature(lng - barWidth * 1.5, lat, stats.A, 'A', scaleFactor),
@@ -569,17 +569,17 @@
                 createBarFeature(lng + barWidth * 1.5, lat, stats.D, 'D', scaleFactor)
             ];
 
-            // ¸üĞÂÖù×´Í¼Êı¾İÔ´
+            // æ›´æ–°æŸ±çŠ¶å›¾æ•°æ®æº
             map.getSource('bar-chart-source').setData({
                 type: 'FeatureCollection',
                 features: features
             });
 
-            // ÏÔÊ¾Öù×´Í¼
+            // æ˜¾ç¤ºæŸ±çŠ¶å›¾
             map.setLayoutProperty('bar-chart-layer', 'visibility', 'visible');
         }
 
-        // ´´½¨Öù×´Í¼ÒªËØ
+        // åˆ›å»ºæŸ±çŠ¶å›¾è¦ç´ 
         function createBarFeature(lng, lat, count, rating, scaleFactor) {
             const width = 0.0007;
             const height = count * scaleFactor;
@@ -605,7 +605,7 @@
             };
         }
 
-        // ÇĞ»»3DÊÓÍ¼
+        // åˆ‡æ¢3Dè§†å›¾
         function toggle3DView() {
             is3DView = !is3DView;
 
@@ -616,18 +616,18 @@
                     duration: 1000
                 });
                 btn.innerHTML = '<i class="fa fa-map"></i>';
-                btn.title = "ÇĞ»»2DÊÓÍ¼";
+                btn.title = "åˆ‡æ¢2Dè§†å›¾";
             } else {
                 map.easeTo({
                     pitch: 0,
                     duration: 1000
                 });
                 btn.innerHTML = '<i class="fa fa-cube"></i>';
-                btn.title = "ÇĞ»»3DÊÓÍ¼";
+                btn.title = "åˆ‡æ¢3Dè§†å›¾";
             }
         }
 
-        // ÇĞ»»ÈÈÁ¦Í¼ÏÔÊ¾
+        // åˆ‡æ¢çƒ­åŠ›å›¾æ˜¾ç¤º
         function toggleHeatmap() {
             heatmapEnabled = !heatmapEnabled;
 
@@ -637,7 +637,7 @@
                 markers.forEach(marker => {
                     marker.getElement().style.display = 'none';
                 });
-                // Òş²ØÖù×´Í¼
+                // éšè—æŸ±çŠ¶å›¾
                 map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
             } else {
                 map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
@@ -647,7 +647,7 @@
             }
         }
 
-        // ¸üĞÂÈÈÁ¦Í¼Êı¾İ
+        // æ›´æ–°çƒ­åŠ›å›¾æ•°æ®
         function updateHeatmap() {
             if (!heatmapEnabled) return;
 
@@ -655,7 +655,7 @@
             const radius = parseInt(document.getElementById('heatmapRadius').value);
             const opacity = parseInt(document.getElementById('heatmapOpacity').value) / 100;
 
-            // ¸üĞÂÏÔÊ¾µÄÊıÖµ
+            // æ›´æ–°æ˜¾ç¤ºçš„æ•°å€¼
             document.getElementById('intensityValue').textContent = intensity;
             document.getElementById('radiusValue').textContent = radius;
             document.getElementById('opacityValue').textContent = opacity * 100 + '%';
@@ -691,7 +691,7 @@
             map.setPaintProperty('heatmap-layer', 'heatmap-opacity', opacity);
         }
 
-        // ÇĞ»»µØÍ¼ÑùÊ½
+        // åˆ‡æ¢åœ°å›¾æ ·å¼
         function switchMapStyle(styleType) {
             let styleUrl;
             switch (styleType) {
@@ -711,7 +711,7 @@
             map.setStyle(styleUrl);
 
             map.once('styledata', () => {
-                // ÖØĞÂÌí¼ÓÈÈÁ¦Í¼²ã
+                // é‡æ–°æ·»åŠ çƒ­åŠ›å›¾å±‚
                 map.addSource('heatmap-source', {
                     type: 'geojson',
                     data: {
@@ -749,7 +749,7 @@
                     }
                 });
 
-                // ÖØĞÂÌí¼ÓÖù×´Í¼²ã
+                // é‡æ–°æ·»åŠ æŸ±çŠ¶å›¾å±‚
                 map.addSource('bar-chart-source', {
                     type: 'geojson',
                     data: {
@@ -781,32 +781,32 @@
                     }
                 });
 
-                // Ä¬ÈÏ²»ÏÔÊ¾ÈÈÁ¦Í¼ºÍÖù×´Í¼
+                // é»˜è®¤ä¸æ˜¾ç¤ºçƒ­åŠ›å›¾å’ŒæŸ±çŠ¶å›¾
                 map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
                 map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
 
-                // ÖØĞÂ¼ÓÔØÊı¾İ
+                // é‡æ–°åŠ è½½æ•°æ®
                 loadLocationData();
             });
         }
 
-        // ¼ÆËãÁ½µãÖ®¼äµÄ¾àÀë
+        // è®¡ç®—ä¸¤ç‚¹ä¹‹é—´çš„è·ç¦»
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
-            const ¦Õ1 = lat1 * Math.PI / 180;
-            const ¦Õ2 = lat2 * Math.PI / 180;
-            const ¦¤¦Õ = (lat2 - lat1) * Math.PI / 180;
-            const ¦¤¦Ë = (lon2 - lon1) * Math.PI / 180;
+            const Ï†1 = lat1 * Math.PI / 180;
+            const Ï†2 = lat2 * Math.PI / 180;
+            const Î”Ï† = (lat2 - lat1) * Math.PI / 180;
+            const Î”Î» = (lon2 - lon1) * Math.PI / 180;
 
-            const a = Math.sin(¦¤¦Õ / 2) * Math.sin(¦¤¦Õ / 2) +
-                Math.cos(¦Õ1) * Math.cos(¦Õ2) *
-                Math.sin(¦¤¦Ë / 2) * Math.sin(¦¤¦Ë / 2);
+            const a = Math.sin(Î”Ï† / 2) * Math.sin(Î”Ï† / 2) +
+                Math.cos(Ï†1) * Math.cos(Ï†2) *
+                Math.sin(Î”Î» / 2) * Math.sin(Î”Î» / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
             return R * c;
         }
 
-        // »ñÈ¡500Ã×°ë¾¶ÄÚµÄÆÀ¼¶Í³¼Æ
+        // è·å–500ç±³åŠå¾„å†…çš„è¯„çº§ç»Ÿè®¡
         function getRatingStatsInRadius(centerLat, centerLng) {
             const radius = 500;
             const stats = { A: 0, B: 0, C: 0, D: 0, total: 0 };
@@ -822,7 +822,7 @@
             return stats;
         }
 
-        // »ñÈ¡ÆÀ¼¶¶ÔÓ¦µÄÑÕÉ«
+        // è·å–è¯„çº§å¯¹åº”çš„é¢œè‰²
         function getRatingColor(rating) {
             switch (rating) {
                 case 'A': return '#4CAF50';
@@ -833,7 +833,7 @@
             }
         }
 
-        // ÇĞ»»²à±ßÀ¸
+        // åˆ‡æ¢ä¾§è¾¹æ 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = sidebar.querySelector('.sidebar-toggle i');
@@ -842,20 +842,20 @@
 
             sidebarCollapsed = !sidebarCollapsed;
 
-            // ÏÈÒÆ³ıËùÓĞ¿í¶ÈÏà¹Ø class
+            // å…ˆç§»é™¤æ‰€æœ‰å®½åº¦ç›¸å…³ class
             sidebar.classList.remove('w-14', 'w-72', 'lg:w-80');
 
             if (sidebarCollapsed) {
                 sidebar.classList.add('w-14');
                 toggleBtn.classList.remove('fa-chevron-left');
                 toggleBtn.classList.add('fa-chevron-right');
-                tooltip.textContent = 'Õ¹¿ª²à±ßÀ¸';
+                tooltip.textContent = 'å±•å¼€ä¾§è¾¹æ ';
                 sidebarContent.classList.add('sidebar-content-collapsed');
             } else {
                 sidebar.classList.add('w-72', 'lg:w-80');
                 toggleBtn.classList.remove('fa-chevron-right');
                 toggleBtn.classList.add('fa-chevron-left');
-                tooltip.textContent = 'ÊÕÆğ²à±ßÀ¸';
+                tooltip.textContent = 'æ”¶èµ·ä¾§è¾¹æ ';
                 setTimeout(() => {
                     sidebarContent.classList.remove('sidebar-content-collapsed');
                 }, 200);
@@ -870,7 +870,7 @@
             localStorage.setItem('sidebarHidden', 'false');
         }
 
-        // ÇĞ»»¶¥²¿À¸
+        // åˆ‡æ¢é¡¶éƒ¨æ 
         function toggleHeader() {
             const header = document.getElementById('header');
             const headerContent = document.querySelector('.header-content');
@@ -890,7 +890,7 @@
             localStorage.setItem('headerCollapsed', headerCollapsed);
         }
 
-        // ¸üĞÂÇĞ»»°´Å¥×´Ì¬
+        // æ›´æ–°åˆ‡æ¢æŒ‰é’®çŠ¶æ€
         function updateToggleButtons() {
             const savedSidebarHidden = localStorage.getItem('sidebarHidden');
             const showBtn = document.getElementById('showSidebarBtn');
@@ -918,14 +918,14 @@
                     sidebar.classList.remove('w-72', 'lg:w-80');
                     toggleBtn.classList.remove('fa-chevron-left');
                     toggleBtn.classList.add('fa-chevron-right');
-                    tooltip.textContent = 'Õ¹¿ª²à±ßÀ¸';
+                    tooltip.textContent = 'å±•å¼€ä¾§è¾¹æ ';
                     sidebarContent.classList.add('sidebar-content-collapsed');
                 } else {
                     sidebar.classList.remove('w-14');
                     sidebar.classList.add('w-72', 'lg:w-80');
                     toggleBtn.classList.remove('fa-chevron-right');
                     toggleBtn.classList.add('fa-chevron-left');
-                    tooltip.textContent = 'ÊÕÆğ²à±ßÀ¸';
+                    tooltip.textContent = 'æ”¶èµ·ä¾§è¾¹æ ';
                     sidebarContent.classList.remove('sidebar-content-collapsed');
                 }
             }
@@ -945,12 +945,12 @@
             }
         }
 
-        // ¸üĞÂÎ»ÖÃÁĞ±í
+        // æ›´æ–°ä½ç½®åˆ—è¡¨
         function updateLocationList() {
             const locationList = document.getElementById('locationList');
 
             if (locationData.length === 0) {
-                locationList.innerHTML = '<p class="text-gray-600">ÔİÎŞÎ»ÖÃÊı¾İ</p>';
+                locationList.innerHTML = '<p class="text-gray-600">æš‚æ— ä½ç½®æ•°æ®</p>';
                 return;
             }
 
@@ -965,21 +965,21 @@
                         <div class="flex justify-between items-center">
                             <span class="font-medium">
                                 <span class="rating-${location.rating} inline-block w-4 h-4 rounded-sm align-middle mr-1"></span>
-                                ${location.rating}¼¶ - ${location.timestamp}
+                                ${location.rating}çº§ - ${location.timestamp}
                             </span>
                             <button onclick="flyToLocation(${location.latitude}, ${location.longitude}, event)" class="text-info hover:text-info/80 transition-colors">
                                 <i class="fa fa-map-marker"></i>
                             </button>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            <p>Î³¶È: ${location.latitude}, ¾­¶È: ${location.longitude}</p>
+                            <p>çº¬åº¦: ${location.latitude}, ç»åº¦: ${location.longitude}</p>
                         </div>
                     `;
                 locationList.appendChild(item);
             });
         }
 
-        // ¶¨Î»µ½ÌØ¶¨Î»ÖÃ
+        // å®šä½åˆ°ç‰¹å®šä½ç½®
         function flyToLocation(lat, lng, event) {
             if (event) event.stopPropagation();
             map.flyTo({
@@ -988,11 +988,11 @@
                 essential: true
             });
 
-            // ÏÔÊ¾500Ã×°ë¾¶·¶Î§ºÍÖù×´Í¼
+            // æ˜¾ç¤º500ç±³åŠå¾„èŒƒå›´å’ŒæŸ±çŠ¶å›¾
             showBarChart(lat, lng);
         }
 
-        // ¸üĞÂÍ³¼ÆÊı¾İ
+        // æ›´æ–°ç»Ÿè®¡æ•°æ®
         function updateStats() {
             const statsContainer = document.getElementById('statsContainer');
 
@@ -1005,29 +1005,29 @@
 
             statsContainer.innerHTML = `
                     <div class="stat-item bg-white rounded-md p-3 shadow-sm">
-                        <div class="font-medium text-gray-800">×Ü¼ÇÂ¼Êı:</div>
+                        <div class="font-medium text-gray-800">æ€»è®°å½•æ•°:</div>
                         <div class="text-lg font-bold">${total}</div>
                     </div>
                     <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-A">
-                        <div class="font-medium">A¼¶ÊıÁ¿:</div>
+                        <div class="font-medium">Açº§æ•°é‡:</div>
                         <div class="text-lg font-bold">${ratingCounts.A} (${total > 0 ? Math.round(ratingCounts.A / total * 100) : 0}%)</div>
                     </div>
                     <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-B">
-                        <div class="font-medium">B¼¶ÊıÁ¿:</div>
+                        <div class="font-medium">Bçº§æ•°é‡:</div>
                         <div class="text-lg font-bold">${ratingCounts.B} (${total > 0 ? Math.round(ratingCounts.B / total * 100) : 0}%)</div>
                     </div>
                     <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-C">
-                        <div class="font-medium">C¼¶ÊıÁ¿:</div>
+                        <div class="font-medium">Cçº§æ•°é‡:</div>
                         <div class="text-lg font-bold">${ratingCounts.C} (${total > 0 ? Math.round(ratingCounts.C / total * 100) : 0}%)</div>
                     </div>
                     <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-D">
-                        <div class="font-medium">D¼¶ÊıÁ¿:</div>
+                        <div class="font-medium">Dçº§æ•°é‡:</div>
                         <div class="text-lg font-bold">${ratingCounts.D} (${total > 0 ? Math.round(ratingCounts.D / total * 100) : 0}%)</div>
                     </div>
                 `;
         }
 
-        // ÏÔÊ¾ÆÀ¼¶Ä£Ì¬¿ò
+        // æ˜¾ç¤ºè¯„çº§æ¨¡æ€æ¡†
         function showRatingModal() {
             const modal = document.getElementById('ratingModal');
             const modalContent = document.getElementById('modalContent');
@@ -1046,16 +1046,16 @@
 
             modal.style.display = 'flex';
 
-            // Ìí¼ÓÄ£Ì¬¿ò¶¯»­
+            // æ·»åŠ æ¨¡æ€æ¡†åŠ¨ç”»
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
                 modalContent.classList.add('scale-100', 'opacity-100');
             }, 10);
 
-            modalMessage.textContent = 'ÕıÔÚ»ñÈ¡ÄúµÄÎ»ÖÃ...';
+            modalMessage.textContent = 'æ­£åœ¨è·å–æ‚¨çš„ä½ç½®...';
 
             if (!navigator.geolocation) {
-                modalMessage.innerHTML = '<p class="text-red-500">ÄúµÄä¯ÀÀÆ÷²»Ö§³ÖµØÀíÎ»ÖÃ¹¦ÄÜ</p>';
+                modalMessage.innerHTML = '<p class="text-red-500">æ‚¨çš„æµè§ˆå™¨ä¸æ”¯æŒåœ°ç†ä½ç½®åŠŸèƒ½</p>';
                 return;
             }
 
@@ -1071,24 +1071,24 @@
                     document.getElementById('previewLng').textContent = longitude;
                     document.getElementById('previewAcc').textContent = accuracy;
 
-                    modalMessage.textContent = 'ÇëÑ¡Ôñ´ËÎ»ÖÃµÄÆÀ¼¶:';
+                    modalMessage.textContent = 'è¯·é€‰æ‹©æ­¤ä½ç½®çš„è¯„çº§:';
                     ratingOptions.style.display = 'flex';
                     document.getElementById('locationPreview').style.display = 'block';
                 },
                 function (error) {
-                    let errorMessage = "»ñÈ¡Î»ÖÃÊ±³ö´í: ";
+                    let errorMessage = "è·å–ä½ç½®æ—¶å‡ºé”™: ";
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
-                            errorMessage += "ÓÃ»§¾Ü¾øÁËÎ»ÖÃÇëÇó";
+                            errorMessage += "ç”¨æˆ·æ‹’ç»äº†ä½ç½®è¯·æ±‚";
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            errorMessage += "Î»ÖÃĞÅÏ¢²»¿ÉÓÃ";
+                            errorMessage += "ä½ç½®ä¿¡æ¯ä¸å¯ç”¨";
                             break;
                         case error.TIMEOUT:
-                            errorMessage += "»ñÈ¡Î»ÖÃÇëÇó³¬Ê±";
+                            errorMessage += "è·å–ä½ç½®è¯·æ±‚è¶…æ—¶";
                             break;
                         case error.UNKNOWN_ERROR:
-                            errorMessage += "·¢ÉúÎ´Öª´íÎó";
+                            errorMessage += "å‘ç”ŸæœªçŸ¥é”™è¯¯";
                             break;
                     }
                     modalMessage.innerHTML = `<p class="text-red-500">${errorMessage}</p>`;
@@ -1101,7 +1101,7 @@
             );
         }
 
-        // ¹Ø±ÕÄ£Ì¬¿ò
+        // å…³é—­æ¨¡æ€æ¡†
         function closeModal() {
             const modal = document.getElementById('ratingModal');
             const modalContent = document.getElementById('modalContent');
@@ -1114,7 +1114,7 @@
             }, 300);
         }
 
-        // Ñ¡ÔñÆÀ¼¶
+        // é€‰æ‹©è¯„çº§
         function selectRating(rating) {
             selectedRating = rating;
 
@@ -1126,7 +1126,7 @@
             document.getElementById('confirmBtn').style.display = 'block';
         }
 
-        // ±£´æ´øÆÀ¼¶µÄÎ»ÖÃ
+        // ä¿å­˜å¸¦è¯„çº§çš„ä½ç½®
         function saveLocationWithRating() {
             if (!currentPosition || !selectedRating) return;
 
@@ -1149,11 +1149,11 @@
             closeModal();
             loadLocationData();
 
-            // ÏÔÊ¾³É¹¦Í¨Öª
-            showNotification('Î»ÖÃÆÀ¼¶ÒÑ³É¹¦±£´æ', 'success');
+            // æ˜¾ç¤ºæˆåŠŸé€šçŸ¥
+            showNotification('ä½ç½®è¯„çº§å·²æˆåŠŸä¿å­˜', 'success');
         }
 
-        // ÏÔÊ¾Í¨Öª
+        // æ˜¾ç¤ºé€šçŸ¥
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 transform transition-all duration-500 translate-y-[-20px] opacity-0`;
@@ -1191,12 +1191,12 @@
 
             document.body.appendChild(notification);
 
-            // ÏÔÊ¾Í¨Öª
+            // æ˜¾ç¤ºé€šçŸ¥
             setTimeout(() => {
                 notification.classList.remove('translate-y-[-20px]', 'opacity-0');
             }, 10);
 
-            // ×Ô¶¯¹Ø±Õ
+            // è‡ªåŠ¨å…³é—­
             setTimeout(() => {
                 notification.classList.add('translate-y-[-20px]', 'opacity-0');
                 setTimeout(() => {
@@ -1205,9 +1205,9 @@
             }, 3000);
         }
 
-        // Çå¿ÕËùÓĞÊı¾İ
+        // æ¸…ç©ºæ‰€æœ‰æ•°æ®
         function clearStorage() {
-            if (confirm('È·¶¨ÒªÇå¿ÕËùÓĞÎ»ÖÃÊı¾İÂğ£¿´Ë²Ù×÷²»¿É³·Ïú£¡')) {
+            if (confirm('ç¡®å®šè¦æ¸…ç©ºæ‰€æœ‰ä½ç½®æ•°æ®å—ï¼Ÿæ­¤æ“ä½œä¸å¯æ’¤é”€ï¼')) {
                 locationData = [];
                 localStorage.removeItem('locationData');
                 loadLocationData();
@@ -1218,52 +1218,52 @@
                     radiusCircle = null;
                 }
 
-                // Òş²ØÖù×´Í¼
+                // éšè—æŸ±çŠ¶å›¾
                 map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
 
-                showNotification('ËùÓĞÎ»ÖÃÊı¾İÒÑÇå¿Õ', 'warning');
+                showNotification('æ‰€æœ‰ä½ç½®æ•°æ®å·²æ¸…ç©º', 'warning');
             }
         }
 
-        // µ¼³öÎªExcelÎÄ¼ş
+        // å¯¼å‡ºä¸ºExcelæ–‡ä»¶
         function exportToExcel() {
             try {
                 if (!locationData || locationData.length === 0) {
-                    showNotification('Ã»ÓĞ¿Éµ¼³öµÄÊı¾İ', 'warning');
+                    showNotification('æ²¡æœ‰å¯å¯¼å‡ºçš„æ•°æ®', 'warning');
                     return;
                 }
 
                 const exportData = locationData.map((location, index) => ({
-                    'ĞòºÅ': index + 1,
-                    'Î³¶È': location.latitude,
-                    '¾­¶È': location.longitude,
-                    '¾«È·¶È(Ã×)': location.accuracy,
-                    'ÆÀ¼¶': location.rating,
-                    'Ê±¼ä': location.timestamp
+                    'åºå·': index + 1,
+                    'çº¬åº¦': location.latitude,
+                    'ç»åº¦': location.longitude,
+                    'ç²¾ç¡®åº¦(ç±³)': location.accuracy,
+                    'è¯„çº§': location.rating,
+                    'æ—¶é—´': location.timestamp
                 }));
 
                 const ws = XLSX.utils.json_to_sheet(exportData);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Î»ÖÃÊı¾İ");
+                XLSX.utils.book_append_sheet(wb, ws, "ä½ç½®æ•°æ®");
 
-                const fileName = `Î»ÖÃÆÀ¼¶Êı¾İ_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
+                const fileName = `ä½ç½®è¯„çº§æ•°æ®_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
                 XLSX.writeFile(wb, fileName);
 
-                showNotification('Êı¾İÒÑ³É¹¦µ¼³öÎªExcelÎÄ¼ş', 'success');
+                showNotification('æ•°æ®å·²æˆåŠŸå¯¼å‡ºä¸ºExcelæ–‡ä»¶', 'success');
             } catch (error) {
-                console.error('µ¼³ö¹ı³ÌÖĞ³ö´í:', error);
-                showNotification('µ¼³öÊ§°Ü: ' + error.message, 'error');
+                console.error('å¯¼å‡ºè¿‡ç¨‹ä¸­å‡ºé”™:', error);
+                showNotification('å¯¼å‡ºå¤±è´¥: ' + error.message, 'error');
             }
         }
 
-        // ´ÓExcelµ¼ÈëÊı¾İ
+        // ä»Excelå¯¼å…¥æ•°æ®
         function importFromExcel() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
 
             if (!file) {
-                console.warn('Î´Ñ¡ÔñÎÄ¼ş');
-                showNotification('ÇëÑ¡ÔñÒ»¸öÎÄ¼ş', 'warning');
+                console.warn('æœªé€‰æ‹©æ–‡ä»¶');
+                showNotification('è¯·é€‰æ‹©ä¸€ä¸ªæ–‡ä»¶', 'warning');
                 return;
             }
 
@@ -1278,16 +1278,16 @@
                     const importedData = XLSX.utils.sheet_to_json(sheet);
 
                     if (!validateImportedData(importedData)) {
-                        showNotification('Êı¾İ¸ñÊ½²»ÕıÈ·£¬ÇëÈ·±£°üº¬ "Î³¶È", "¾­¶È", "ÆÀ¼¶" ÁĞ', 'error');
+                        showNotification('æ•°æ®æ ¼å¼ä¸æ­£ç¡®ï¼Œè¯·ç¡®ä¿åŒ…å« "çº¬åº¦", "ç»åº¦", "è¯„çº§" åˆ—', 'error');
                         return;
                     }
 
                     locationData = importedData.map((item, index) => {
-                        const lat = parseFloat(item['Î³¶È']);
-                        const lng = parseFloat(item['¾­¶È']);
-                        const rating = item['ÆÀ¼¶'] || 'C';
-                        const timestamp = item['Ê±¼ä'] || new Date().toLocaleString();
-                        const accuracy = item['¾«È·¶È(Ã×)'] || 50;
+                        const lat = parseFloat(item['çº¬åº¦']);
+                        const lng = parseFloat(item['ç»åº¦']);
+                        const rating = item['è¯„çº§'] || 'C';
+                        const timestamp = item['æ—¶é—´'] || new Date().toLocaleString();
+                        const accuracy = item['ç²¾ç¡®åº¦(ç±³)'] || 50;
 
                         return {
                             id: Date.now() + index,
@@ -1301,44 +1301,44 @@
 
                     localStorage.setItem('locationData', JSON.stringify(locationData));
                     loadLocationData();
-                    showNotification(`³É¹¦µ¼Èë ${locationData.length} ÌõÊı¾İ`, 'success');
+                    showNotification(`æˆåŠŸå¯¼å…¥ ${locationData.length} æ¡æ•°æ®`, 'success');
 
                 } catch (error) {
-                    console.error('µ¼Èë¹ı³ÌÖĞ³ö´í:', error);
-                    showNotification('µ¼ÈëÊ§°Ü: ' + error.message, 'error');
+                    console.error('å¯¼å…¥è¿‡ç¨‹ä¸­å‡ºé”™:', error);
+                    showNotification('å¯¼å…¥å¤±è´¥: ' + error.message, 'error');
                 } finally {
                     fileInput.value = '';
                 }
             };
 
             reader.onerror = function () {
-                console.error('ÎÄ¼ş¶ÁÈ¡Ê§°Ü');
-                showNotification('ÎÄ¼ş¶ÁÈ¡Ê§°Ü£¬ÇëÖØÊÔ', 'error');
+                console.error('æ–‡ä»¶è¯»å–å¤±è´¥');
+                showNotification('æ–‡ä»¶è¯»å–å¤±è´¥ï¼Œè¯·é‡è¯•', 'error');
             };
 
             reader.readAsArrayBuffer(file);
         }
 
-        // ÑéÖ¤µ¼ÈëÊı¾İµÄ¸ñÊ½
+        // éªŒè¯å¯¼å…¥æ•°æ®çš„æ ¼å¼
         function validateImportedData(data) {
             return data.every(item => {
-                const hasRequiredFields = 'Î³¶È' in item && '¾­¶È' in item && 'ÆÀ¼¶' in item;
+                const hasRequiredFields = 'çº¬åº¦' in item && 'ç»åº¦' in item && 'è¯„çº§' in item;
                 if (!hasRequiredFields) return false;
 
-                const lat = parseFloat(item['Î³¶È']);
-                const lng = parseFloat(item['¾­¶È']);
+                const lat = parseFloat(item['çº¬åº¦']);
+                const lng = parseFloat(item['ç»åº¦']);
                 return !isNaN(lat) && !isNaN(lng) &&
                     lat >= -90 && lat <= 90 &&
                     lng >= -180 && lng <= 180;
             });
         }
 
-        // ³õÊ¼»¯µØÍ¼ºÍUI
+        // åˆå§‹åŒ–åœ°å›¾å’ŒUI
         document.addEventListener('DOMContentLoaded', function () {
             initMap();
             updateToggleButtons();
 
-            // ÎªÈÈÁ¦Í¼»¬¿éÌí¼ÓÊµÊ±¸üĞÂÏÔÊ¾
+            // ä¸ºçƒ­åŠ›å›¾æ»‘å—æ·»åŠ å®æ—¶æ›´æ–°æ˜¾ç¤º
             document.getElementById('heatmapIntensity').addEventListener('input', function () {
                 document.getElementById('intensityValue').textContent = this.value;
             });
