@@ -1,1 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>位置空气质量评级系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- 配置Tailwind自定义颜色 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        danger: '#f44336',
+                        info: '#2196F3',
+                        warning: '#ff9800',
+                        ratingA: '#4CAF50',
+                        ratingB: '#8BC34A',
+                        ratingC: '#FFC107',
+                        ratingD: '#FF9800'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .sidebar-shadow {
+                box-shadow: 2px 0 5px #FF9800;
+            }
+            .header-shadow {
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .btn-hover {
+                transition: all 0.2s ease;
+            }
+            .btn-hover:hover {
+                filter: brightness(1.1);
+            }
+            .sidebar-transition {
+                transition: width 0.3s ease, padding 0.3s ease;
+            }
+            .header-transition {
+                transition: height 0.3s ease, padding 0.3s ease;
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                background: #a1a1a1;
+            }
+            .sidebar-content {
+                height: calc(100vh - 140px);
+            }
+            .sidebar-content-collapsed {
+                visibility: hidden;
+                opacity: 0;
 
+            }
+            .rating-A {
+                background-color: #4CAF50;
+                color: #333;
+            }
+
+            .rating-B {
+                background-color: #8BC34A;
+                color: #333;
+            }
+
+            .rating-C {
+                background-color: #FFC107;
+                color: #333;
+            }
+
+            .rating-D {
+                background-color: #FF9800;
+                color: #333;
+            }
+            .stats-container {
+                margin-top: 20px;
+            }
+
+            .stat-item {
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 4px;
+                background-color: white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            .legend {
+                display: flex;
+                flex-wrap: wrap;
+                margin-top: 15px;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                margin-right: 15px;
+                margin-bottom: 5px;
+            }
+
+            .legend-color {
+                width: 20px;
+                height: 20px;
+                margin-right: 5px;
+                border-radius: 3px;
+            }
+            .sidebar-hidden {
+                display: none !important;
+            }
+        }
+
+    </style>
+</head>
+<body class="font-sans h-screen overflow-hidden">
+    <!-- 顶部导航栏 -->
+    <header class="header bg-gray-50 header-shadow transition-all duration-300 z-50" id="header">
+        <div class="header-top flex justify-between items-center px-4 h-10">
+            <button class="toggle-header-btn text-gray-700" onclick="toggleHeader()">
+                <i class="fa fa-bars"></i>
+            </button>
+            <h1 class="text-lg font-bold text-gray-800">位置空气质量评级系统</h1>
+        </div>
+        <div class="header-content px-4 py-2 transition-all duration-300">
+            <div class="flex flex-wrap gap-2">
+                <button class="primary-btn bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="showRatingModal()">
+                    <i class="fa fa-plus"></i> 添加新位置
+                </button>
+                <button class="info-btn bg-info text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="exportToExcel()">
+                    <i class="fa fa-file-excel-o"></i> 导出Excel
+                </button>
+                <button class="danger-btn bg-danger text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="clearStorage()">
+                    <i class="fa fa-trash"></i> 清空数据
+                </button>
+                <input type="file" id="fileInput" accept=".xlsx" className="hidden" onchange="importFromExcel()" />
+                <button class="info-btn bg-info text-white px-4 py-2 rounded-md flex items-center gap-2 btn-hover" onclick="document.getElementById('fileInput').click()">
+                    <i class="fa fa-file-import"></i> 导入数据
+                </button>
+            </div>
+        </div>
+    </header>
+    <button id="showSidebarBtn" class="fixed top-16 left-2 z-50 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md" style="display:none;" onclick="showSidebar()">
+        <i class="fa fa-bars"></i>
+    </button>
+    <!-- 主容器 -->
+    <div id="mainContainer" class="flex h-screen overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside class="sidebar bg-gray-50 sidebar-shadow transition-all duration-300 w-72 lg:w-80 z-40 h-full flex flex-col " id="sidebar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="collapsed-tooltip absolute left-[calc(100%+10px)] top-3 bg-white px-3 py-1 rounded-md shadow-lg text-sm opacity-0 pointer-events-none transition-opacity duration-200">
+                展开侧边栏
+            </span>
+
+            <div class="sidebar-content p-4 h-full overflow-y-auto scrollbar-thin transition-all duration-300" id="sidebarContent">
+                <!-- 地图类型选择 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">地图类型</h3>
+                    <div class="space-y-2">
+                        <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('streets')">
+                            <i class="fa fa-map"></i> 街道地图
+                        </button>
+                        <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('satellite')">
+                            <i class="fa fa-satellite"></i> 卫星地图
+                        </button>
+                        <button class="info-btn bg-info text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-start btn-hover" onclick="switchMapStyle('outdoors')">
+                            <i class="fa fa-mountain"></i> 地形图
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据统计 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">数据统计</h3>
+                    <div class="stats-container space-y-2" id="statsContainer">
+                        <p class="text-gray-600">暂无统计数据</p>
+                    </div>
+                </div>
+
+                <!-- 图例 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">图例</h3>
+                    <div class="legend flex flex-wrap gap-3">
+                        <div class="legend-item flex items-center">
+                            <div class="legend-color rating-A w-4 h-4 rounded-sm mr-2"></div>
+                            <span>A级</span>
+                        </div>
+                        <div class="legend-item flex items-center">
+                            <div class="legend-color rating-B w-4 h-4 rounded-sm mr-2"></div>
+                            <span>B级</span>
+                        </div>
+                        <div class="legend-item flex items-center">
+                            <div class="legend-color rating-C w-4 h-4 rounded-sm mr-2"></div>
+                            <span>C级</span>
+                        </div>
+                        <div class="legend-item flex items-center">
+                            <div class="legend-color rating-D w-4 h-4 rounded-sm mr-2"></div>
+                            <span>D级</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热力图控制 -->
+                <div class="mb-6 bg-gray-100 p-4 rounded-lg">
+                    <button class="warning-btn bg-warning text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-center mb-4 btn-hover" onclick="toggle3DView()">
+                        <i class="fa fa-cube"></i> 切换3D视图
+                    </button>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">热力图控制</h3>
+                    <button class="danger-btn bg-danger text-white w-full py-2 px-3 rounded-md flex items-center gap-2 justify-center mb-4 btn-hover" onclick="toggleHeatmap()">
+                        <i class="fa fa-fire"></i> 切换热力图
+                    </button>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <label class="text-gray-700 w-24">热力图强度:</label>
+                            <input type="range" id="heatmapIntensity" min="1" max="20" value="10" class="flex-1 mx-2" onchange="updateHeatmap()">
+                            <span id="intensityValue" class="text-gray-700 w-8 text-center">10</span>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="text-gray-700 w-24">热力图半径:</label>
+                            <input type="range" id="heatmapRadius" min="5" max="50" value="25" class="flex-1 mx-2" onchange="updateHeatmap()">
+                            <span id="radiusValue" class="text-gray-700 w-8 text-center">25</span>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="text-gray-700 w-24">热力图透明度:</label>
+                            <input type="range" id="heatmapOpacity" min="0" max="100" value="70" class="flex-1 mx-2" onchange="updateHeatmap()">
+                            <span id="opacityValue" class="text-gray-700 w-8 text-center">70%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 位置列表 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">位置列表</h3>
+                    <div class="location-list space-y-2" id="locationList">
+                        <p class="text-gray-600">暂无位置数据</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 地图容器 -->
+        <main class="map-container flex-1 relative h-full" id="mapContainer">
+            <div id="map" class="w-full h-full"></div>
+            <div id="3d-control" class="map-control-btn absolute right-4 bottom-8 bg-white w-8 h-8 rounded-md flex items-center justify-center shadow-md cursor-pointer z-10 hover:bg-gray-100 transition-colors">
+                <i class="fa fa-cube"></i>
+            </div>
+        </main>
+    </div>
+
+    <!-- 评级模态框 -->
+    <div id="ratingModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <button class="close absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal()">
+                <i class="fa fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">添加新位置评级</h2>
+            <p id="modalMessage" class="text-gray-600 mb-6">正在获取您的位置...</p>
+
+            <div class="rating-options flex justify-center my-6" id="ratingOptions" style="display: none;">
+                <button class="rating-btn rating-A w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md mr-2 transition-all hover:scale-110 active:scale-95" onclick="selectRating('A')">A</button>
+                <button class="rating-btn rating-B w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md mr-2 transition-all hover:scale-110 active:scale-95" onclick="selectRating('B')">B</button>
+                <button class="rating-btn rating-C w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md mr-2 transition-all hover:scale-110 active:scale-95" onclick="selectRating('C')">C</button>
+                <button class="rating-btn rating-D w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md transition-all hover:scale-110 active:scale-95" onclick="selectRating('D')">D</button>
+            </div>
+
+            <div id="locationPreview" class="bg-gray-50 p-4 rounded-lg my-4" style="display: none;">
+                <p class="text-sm text-gray-600"><strong>纬度:</strong> <span id="previewLat"></span></p>
+                <p class="text-sm text-gray-600"><strong>经度:</strong> <span id="previewLng"></span></p>
+                <p class="text-sm text-gray-600"><strong>精确度:</strong> ±<span id="previewAcc"></span> 米</p>
+            </div>
+
+            <button id="confirmBtn" class="primary-btn bg-primary text-white px-6 py-3 rounded-md flex items-center gap-2 mx-auto mt-4 hidden btn-hover" onclick="saveLocationWithRating()">
+                <i class="fa fa-check"></i> 确认保存
+            </button>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <script>
+        // 初始化变量
+        let map;
+        let locationData = JSON.parse(localStorage.getItem('locationData')) || [];
+        let markers = [];
+        let is3DView = false;
+        let heatmapEnabled = false;
+        let radiusCircle = null;
+        let barChartLayer = null;
+        let sidebarCollapsed = false;
+        let headerCollapsed = false;
+        let selectedRating = null;
+        let currentPosition = null;
+
+        // Mapbox访问令牌 - 请替换为您自己的
+        mapboxgl.accessToken = 'pk.eyJ1IjoiazhhdDl6Z28iLCJhIjoiY21hY2h5Mm5tMDNpejJtcXZxYW9kbzA4YyJ9.w4RIBZJv5DOmzfVZQ_FpXw';
+
+        // 初始化地图
+        function initMap() {
+            map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [116.4074, 39.9042],
+                zoom: 5,
+                pitch: 0
+            });
+
+            // 添加导航控件
+            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+            // 3D视图切换按钮事件
+            document.getElementById('3d-control').addEventListener('click', toggle3DView);
+
+            // 地图加载完成后
+            map.on('load', () => {
+                // 初始化热力图数据源
+                map.addSource('heatmap-source', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+
+                // 初始化热力图层
+                map.addLayer({
+                    id: 'heatmap-layer',
+                    type: 'heatmap',
+                    source: 'heatmap-source',
+                    paint: {
+                        'heatmap-weight': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'weight'],
+                            0, 0,
+                            1, 1
+                        ],
+                        'heatmap-intensity': 1,
+                        'heatmap-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['heatmap-density'],
+                            0, 'rgba(33,102,172,0)',
+                            0.2, 'rgb(103,169,207)',
+                            0.4, 'rgb(209,229,240)',
+                            0.6, 'rgb(253,219,199)',
+                            0.8, 'rgb(239,138,98)',
+                            1, 'rgb(178,24,43)'
+                        ],
+                        'heatmap-radius': 25,
+                        'heatmap-opacity': 0.7
+                    }
+                });
+
+                // 默认不显示热力图
+                map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
+
+                // 初始化柱状图数据源
+                map.addSource('bar-chart-source', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+
+                // 初始化柱状图层
+                map.addLayer({
+                    id: 'bar-chart-layer',
+                    type: 'fill-extrusion',
+                    source: 'bar-chart-source',
+                    paint: {
+                        'fill-extrusion-color': [
+                            'match',
+                            ['get', 'rating'],
+                            'A', '#4CAF50',
+                            'B', '#8BC34A',
+                            'C', '#FFC107',
+                            'D', '#FF9800',
+                            '#999'
+                        ],
+                        'fill-extrusion-height': ['get', 'count'],
+                        'fill-extrusion-base': 0,
+                        'fill-extrusion-opacity': 0.8
+                    },
+                    layout: {
+                        'visibility': 'none'
+                    }
+                });
+
+                // 加载已有数据
+                loadLocationData();
+                updateToggleButtons();
+            });
+        }
+
+        // 加载位置数据到地图
+        function loadLocationData() {
+            // 清除现有标记
+            markers.forEach(marker => marker.remove());
+            markers = [];
+
+            if (locationData.length === 0) {
+                document.getElementById('statsContainer').innerHTML = '<p class="text-gray-600">暂无统计数据</p>';
+                document.getElementById('locationList').innerHTML = '<p class="text-gray-600">暂无位置数据</p>';
+                return;
+            }
+
+            // 创建标记并添加到地图
+            locationData.forEach(location => {
+                const el = document.createElement('div');
+                el.className = 'marker rounded-full border-2 border-white cursor-pointer transition-all hover:scale-125';
+                el.style.backgroundColor = getRatingColor(location.rating);
+                el.style.width = '16px';
+                el.style.height = '16px';
+
+                // 创建弹出窗口内容
+                const stats = getRatingStatsInRadius(location.latitude, location.longitude);
+                const popupContent = `
+                        <div class="p-2">
+                            <div class="font-bold text-gray-800 mb-1">位置评级:
+                                <span class="rating-${location.rating} inline-block w-4 h-4 rounded-sm align-middle ml-1"></span>
+                                ${location.rating}级
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>纬度: ${location.latitude}</p>
+                                <p>经度: ${location.longitude}</p>
+                                <p>时间: ${location.timestamp}</p>
+                            </div>
+                            <div class="radius-stats mt-2 bg-gray-50 p-2 rounded">
+                                <h4 class="font-medium text-gray-800 text-sm mb-1">500米半径内统计:</h4>
+                                <div class="radius-stat-item rating-A text-xs">
+                                    <span><span class="rating-A inline-block w-3 h-3 rounded-sm mr-1"></span> A级:</span>
+                                    <span>${stats.A}次</span>
+                                </div>
+                                <div class="radius-stat-item rating-B text-xs">
+                                    <span><span class="rating-B inline-block w-3 h-3 rounded-sm mr-1"></span> B级:</span>
+                                    <span>${stats.B}次</span>
+                                </div>
+                                <div class="radius-stat-item rating-C text-xs">
+                                    <span><span class="rating-C inline-block w-3 h-3 rounded-sm mr-1"></span> C级:</span>
+                                    <span>${stats.C}次</span>
+                                </div>
+                                <div class="radius-stat-item rating-D text-xs">
+                                    <span><span class="rating-D inline-block w-3 h-3 rounded-sm mr-1"></span> D级:</span>
+                                    <span>${stats.D}次</span>
+                                </div>
+                                <div class="radius-stat-item text-xs">
+                                    <span>总计:</span>
+                                    <span>${stats.total}次</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([location.longitude, location.latitude])
+                    .setPopup(new mapboxgl.Popup().setHTML(popupContent))
+                    .addTo(map);
+
+                markers.push(marker);
+
+                // 点击标记时显示500米半径范围和柱状图
+                el.addEventListener('click', () => {
+                    showBarChart(location.latitude, location.longitude);
+                });
+            });
+
+            // 更新热力图数据
+            updateHeatmap();
+            updateLocationList();
+            updateStats();
+        }
+
+        // 显示柱状图
+        function showBarChart(lat, lng) {
+            // 移除现有的半径圆和柱状图
+            if (radiusCircle) {
+                map.removeLayer(radiusCircle);
+                map.removeSource('radius-circle');
+            }
+
+            // 隐藏之前的柱状图
+            map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
+
+            // 添加新的半径圆
+            map.addSource('radius-circle', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [lng, lat]
+                    }
+                }
+            });
+
+            radiusCircle = 'radius-circle';
+            map.addLayer({
+                id: radiusCircle,
+                type: 'circle',
+                source: 'radius-circle',
+                paint: {
+                    'circle-radius': {
+                        stops: [
+                            [0, 0],
+                            [20, 500 / 0.075]
+                        ],
+                        base: 2
+                    },
+                    'circle-color': '#0078A8',
+                    'circle-opacity': 0.1,
+                    'circle-stroke-color': '#0078A8',
+                    'circle-stroke-width': 1
+                }
+            });
+
+            // 居中显示
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 15
+            });
+
+            // 获取统计数据
+            const stats = getRatingStatsInRadius(lat, lng);
+
+            if (stats.total === 0) return;
+
+            // 创建柱状图数据
+            const barWidth = 0.0008;
+            const maxCount = Math.max(stats.A, stats.B, stats.C, stats.D);
+            const scaleFactor = maxCount > 0 ? 200 / maxCount : 1; // 缩放因子，使最高柱为200米
+
+            const features = [
+                createBarFeature(lng - barWidth * 1.5, lat, stats.A, 'A', scaleFactor),
+                createBarFeature(lng - barWidth * 0.5, lat, stats.B, 'B', scaleFactor),
+                createBarFeature(lng + barWidth * 0.5, lat, stats.C, 'C', scaleFactor),
+                createBarFeature(lng + barWidth * 1.5, lat, stats.D, 'D', scaleFactor)
+            ];
+
+            // 更新柱状图数据源
+            map.getSource('bar-chart-source').setData({
+                type: 'FeatureCollection',
+                features: features
+            });
+
+            // 显示柱状图
+            map.setLayoutProperty('bar-chart-layer', 'visibility', 'visible');
+        }
+
+        // 创建柱状图要素
+        function createBarFeature(lng, lat, count, rating, scaleFactor) {
+            const width = 0.0007;
+            const height = count * scaleFactor;
+
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [
+                        [
+                            [lng - width, lat - width],
+                            [lng + width, lat - width],
+                            [lng + width, lat + width],
+                            [lng - width, lat + width],
+                            [lng - width, lat - width]
+                        ]
+                    ]
+                },
+                properties: {
+                    rating: rating,
+                    count: height
+                }
+            };
+        }
+
+        // 切换3D视图
+        function toggle3DView() {
+            is3DView = !is3DView;
+
+            const btn = document.getElementById('3d-control');
+            if (is3DView) {
+                map.easeTo({
+                    pitch: 60,
+                    duration: 1000
+                });
+                btn.innerHTML = '<i class="fa fa-map"></i>';
+                btn.title = "切换2D视图";
+            } else {
+                map.easeTo({
+                    pitch: 0,
+                    duration: 1000
+                });
+                btn.innerHTML = '<i class="fa fa-cube"></i>';
+                btn.title = "切换3D视图";
+            }
+        }
+
+        // 切换热力图显示
+        function toggleHeatmap() {
+            heatmapEnabled = !heatmapEnabled;
+
+            if (heatmapEnabled) {
+                updateHeatmap();
+                map.setLayoutProperty('heatmap-layer', 'visibility', 'visible');
+                markers.forEach(marker => {
+                    marker.getElement().style.display = 'none';
+                });
+                // 隐藏柱状图
+                map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
+            } else {
+                map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
+                markers.forEach(marker => {
+                    marker.getElement().style.display = 'block';
+                });
+            }
+        }
+
+        // 更新热力图数据
+        function updateHeatmap() {
+            if (!heatmapEnabled) return;
+
+            const intensity = parseInt(document.getElementById('heatmapIntensity').value);
+            const radius = parseInt(document.getElementById('heatmapRadius').value);
+            const opacity = parseInt(document.getElementById('heatmapOpacity').value) / 100;
+
+            // 更新显示的数值
+            document.getElementById('intensityValue').textContent = intensity;
+            document.getElementById('radiusValue').textContent = radius;
+            document.getElementById('opacityValue').textContent = opacity * 100 + '%';
+
+            const features = locationData.map(location => {
+                let weight = 0.5;
+                switch (location.rating) {
+                    case 'A': weight = 1.0; break;
+                    case 'B': weight = 0.8; break;
+                    case 'C': weight = 0.6; break;
+                    case 'D': weight = 0.4; break;
+                }
+
+                return {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [location.longitude, location.latitude]
+                    },
+                    properties: {
+                        weight: weight
+                    }
+                };
+            });
+
+            map.getSource('heatmap-source').setData({
+                type: 'FeatureCollection',
+                features: features
+            });
+
+            map.setPaintProperty('heatmap-layer', 'heatmap-intensity', intensity / 5);
+            map.setPaintProperty('heatmap-layer', 'heatmap-radius', radius);
+            map.setPaintProperty('heatmap-layer', 'heatmap-opacity', opacity);
+        }
+
+        // 切换地图样式
+        function switchMapStyle(styleType) {
+            let styleUrl;
+            switch (styleType) {
+                case 'streets':
+                    styleUrl = 'mapbox://styles/mapbox/streets-v12';
+                    break;
+                case 'satellite':
+                    styleUrl = 'mapbox://styles/mapbox/satellite-v9';
+                    break;
+                case 'outdoors':
+                    styleUrl = 'mapbox://styles/mapbox/outdoors-v12';
+                    break;
+                default:
+                    styleUrl = 'mapbox://styles/mapbox/streets-v12';
+            }
+
+            map.setStyle(styleUrl);
+
+            map.once('styledata', () => {
+                // 重新添加热力图层
+                map.addSource('heatmap-source', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+
+                map.addLayer({
+                    id: 'heatmap-layer',
+                    type: 'heatmap',
+                    source: 'heatmap-source',
+                    paint: {
+                        'heatmap-weight': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'weight'],
+                            0, 0,
+                            1, 1
+                        ],
+                        'heatmap-intensity': 1,
+                        'heatmap-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['heatmap-density'],
+                            0, 'rgba(33,102,172,0)',
+                            0.2, 'rgb(103,169,207)',
+                            0.4, 'rgb(209,229,240)',
+                            0.6, 'rgb(253,219,199)',
+                            0.8, 'rgb(239,138,98)',
+                            1, 'rgb(178,24,43)'
+                        ],
+                        'heatmap-radius': 25,
+                        'heatmap-opacity': 0.7
+                    }
+                });
+
+                // 重新添加柱状图层
+                map.addSource('bar-chart-source', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+
+                map.addLayer({
+                    id: 'bar-chart-layer',
+                    type: 'fill-extrusion',
+                    source: 'bar-chart-source',
+                    paint: {
+                        'fill-extrusion-color': [
+                            'match',
+                            ['get', 'rating'],
+                            'A', '#4CAF50',
+                            'B', '#8BC34A',
+                            'C', '#FFC107',
+                            'D', '#FF9800',
+                            '#999'
+                        ],
+                        'fill-extrusion-height': ['get', 'count'],
+                        'fill-extrusion-base': 0,
+                        'fill-extrusion-opacity': 0.8
+                    },
+                    layout: {
+                        'visibility': 'none'
+                    }
+                });
+
+                // 默认不显示热力图和柱状图
+                map.setLayoutProperty('heatmap-layer', 'visibility', 'none');
+                map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
+
+                // 重新加载数据
+                loadLocationData();
+            });
+        }
+
+        // 计算两点之间的距离
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c;
+        }
+
+        // 获取500米半径内的评级统计
+        function getRatingStatsInRadius(centerLat, centerLng) {
+            const radius = 500;
+            const stats = { A: 0, B: 0, C: 0, D: 0, total: 0 };
+
+            locationData.forEach(location => {
+                const distance = getDistance(centerLat, centerLng, location.latitude, location.longitude);
+                if (distance <= radius) {
+                    stats[location.rating]++;
+                    stats.total++;
+                }
+            });
+
+            return stats;
+        }
+
+        // 获取评级对应的颜色
+        function getRatingColor(rating) {
+            switch (rating) {
+                case 'A': return '#4CAF50';
+                case 'B': return '#8BC34A';
+                case 'C': return '#FFC107';
+                case 'D': return '#FF9800';
+                default: return '#999';
+            }
+        }
+
+        // 切换侧边栏
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = sidebar.querySelector('.sidebar-toggle i');
+            const tooltip = sidebar.querySelector('.collapsed-tooltip');
+            const sidebarContent = document.getElementById('sidebarContent');
+
+            sidebarCollapsed = !sidebarCollapsed;
+
+            // 先移除所有宽度相关 class
+            sidebar.classList.remove('w-14', 'w-72', 'lg:w-80');
+
+            if (sidebarCollapsed) {
+                sidebar.classList.add('w-14');
+                toggleBtn.classList.remove('fa-chevron-left');
+                toggleBtn.classList.add('fa-chevron-right');
+                tooltip.textContent = '展开侧边栏';
+                sidebarContent.classList.add('sidebar-content-collapsed');
+            } else {
+                sidebar.classList.add('w-72', 'lg:w-80');
+                toggleBtn.classList.remove('fa-chevron-right');
+                toggleBtn.classList.add('fa-chevron-left');
+                tooltip.textContent = '收起侧边栏';
+                setTimeout(() => {
+                    sidebarContent.classList.remove('sidebar-content-collapsed');
+                }, 200);
+            }
+            localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+        }
+        function showSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const showBtn = document.getElementById('showSidebarBtn');
+            sidebar.classList.remove('sidebar-hidden');
+            showBtn.style.display = 'none';
+            localStorage.setItem('sidebarHidden', 'false');
+        }
+
+        // 切换顶部栏
+        function toggleHeader() {
+            const header = document.getElementById('header');
+            const headerContent = document.querySelector('.header-content');
+
+            headerCollapsed = !headerCollapsed;
+
+            if (headerCollapsed) {
+                header.classList.add('h-10');
+                header.classList.remove('h-auto');
+                headerContent.style.display = 'none';
+            } else {
+                header.classList.remove('h-10');
+                header.classList.add('h-auto');
+                headerContent.style.display = 'block';
+            }
+
+            localStorage.setItem('headerCollapsed', headerCollapsed);
+        }
+
+        // 更新切换按钮状态
+        function updateToggleButtons() {
+            const savedSidebarHidden = localStorage.getItem('sidebarHidden');
+            const showBtn = document.getElementById('showSidebarBtn');
+            if (savedSidebarHidden === 'true') {
+                sidebar.classList.add('sidebar-hidden');
+                showBtn.style.display = 'flex';
+            } else {
+                sidebar.classList.remove('sidebar-hidden');
+                showBtn.style.display = 'none';
+            }
+            const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+            const savedHeaderState = localStorage.getItem('headerCollapsed');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = sidebar.querySelector('.sidebar-toggle i');
+            const tooltip = sidebar.querySelector('.collapsed-tooltip');
+            const header = document.getElementById('header');
+            const headerContent = document.querySelector('.header-content');
+            const sidebarContent = document.getElementById('sidebarContent');
+
+            if (savedSidebarState !== null) {
+                sidebarCollapsed = savedSidebarState === 'true';
+
+                if (sidebarCollapsed) {
+                    sidebar.classList.add('w-14');
+                    sidebar.classList.remove('w-72', 'lg:w-80');
+                    toggleBtn.classList.remove('fa-chevron-left');
+                    toggleBtn.classList.add('fa-chevron-right');
+                    tooltip.textContent = '展开侧边栏';
+                    sidebarContent.classList.add('sidebar-content-collapsed');
+                } else {
+                    sidebar.classList.remove('w-14');
+                    sidebar.classList.add('w-72', 'lg:w-80');
+                    toggleBtn.classList.remove('fa-chevron-right');
+                    toggleBtn.classList.add('fa-chevron-left');
+                    tooltip.textContent = '收起侧边栏';
+                    sidebarContent.classList.remove('sidebar-content-collapsed');
+                }
+            }
+
+            if (savedHeaderState !== null) {
+                headerCollapsed = savedHeaderState === 'true';
+
+                if (headerCollapsed) {
+                    header.classList.add('h-10');
+                    header.classList.remove('h-auto');
+                    headerContent.style.display = 'none';
+                } else {
+                    header.classList.remove('h-10');
+                    header.classList.add('h-auto');
+                    headerContent.style.display = 'block';
+                }
+            }
+        }
+
+        // 更新位置列表
+        function updateLocationList() {
+            const locationList = document.getElementById('locationList');
+
+            if (locationData.length === 0) {
+                locationList.innerHTML = '<p class="text-gray-600">暂无位置数据</p>';
+                return;
+            }
+
+            locationList.innerHTML = '';
+
+            const sortedData = [...locationData].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sortedData.forEach(location => {
+                const item = document.createElement('div');
+                item.className = 'location-item bg-white rounded-md p-3 shadow-sm hover:shadow-md transition-shadow card-hover';
+                item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">
+                                <span class="rating-${location.rating} inline-block w-4 h-4 rounded-sm align-middle mr-1"></span>
+                                ${location.rating}级 - ${location.timestamp}
+                            </span>
+                            <button onclick="flyToLocation(${location.latitude}, ${location.longitude}, event)" class="text-info hover:text-info/80 transition-colors">
+                                <i class="fa fa-map-marker"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <p>纬度: ${location.latitude}, 经度: ${location.longitude}</p>
+                        </div>
+                    `;
+                locationList.appendChild(item);
+            });
+        }
+
+        // 定位到特定位置
+        function flyToLocation(lat, lng, event) {
+            if (event) event.stopPropagation();
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 15,
+                essential: true
+            });
+
+            // 显示500米半径范围和柱状图
+            showBarChart(lat, lng);
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const statsContainer = document.getElementById('statsContainer');
+
+            const ratingCounts = { A: 0, B: 0, C: 0, D: 0 };
+            locationData.forEach(location => {
+                ratingCounts[location.rating]++;
+            });
+
+            const total = locationData.length;
+
+            statsContainer.innerHTML = `
+                    <div class="stat-item bg-white rounded-md p-3 shadow-sm">
+                        <div class="font-medium text-gray-800">总记录数:</div>
+                        <div class="text-lg font-bold">${total}</div>
+                    </div>
+                    <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-A">
+                        <div class="font-medium">A级数量:</div>
+                        <div class="text-lg font-bold">${ratingCounts.A} (${total > 0 ? Math.round(ratingCounts.A / total * 100) : 0}%)</div>
+                    </div>
+                    <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-B">
+                        <div class="font-medium">B级数量:</div>
+                        <div class="text-lg font-bold">${ratingCounts.B} (${total > 0 ? Math.round(ratingCounts.B / total * 100) : 0}%)</div>
+                    </div>
+                    <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-C">
+                        <div class="font-medium">C级数量:</div>
+                        <div class="text-lg font-bold">${ratingCounts.C} (${total > 0 ? Math.round(ratingCounts.C / total * 100) : 0}%)</div>
+                    </div>
+                    <div class="stat-item bg-white rounded-md p-3 shadow-sm rating-D">
+                        <div class="font-medium">D级数量:</div>
+                        <div class="text-lg font-bold">${ratingCounts.D} (${total > 0 ? Math.round(ratingCounts.D / total * 100) : 0}%)</div>
+                    </div>
+                `;
+        }
+
+        // 显示评级模态框
+        function showRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            const modalContent = document.getElementById('modalContent');
+            const ratingOptions = document.getElementById('ratingOptions');
+            const modalMessage = document.getElementById('modalMessage');
+            const confirmBtn = document.getElementById('confirmBtn');
+
+            selectedRating = null;
+            currentPosition = null;
+            ratingOptions.style.display = 'none';
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.classList.remove('selected-rating');
+            });
+            document.getElementById('locationPreview').style.display = 'none';
+            confirmBtn.style.display = 'none';
+
+            modal.style.display = 'flex';
+
+            // 添加模态框动画
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            modalMessage.textContent = '正在获取您的位置...';
+
+            if (!navigator.geolocation) {
+                modalMessage.innerHTML = '<p class="text-red-500">您的浏览器不支持地理位置功能</p>';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    currentPosition = position;
+
+                    const latitude = position.coords.latitude.toFixed(6);
+                    const longitude = position.coords.longitude.toFixed(6);
+                    const accuracy = Math.round(position.coords.accuracy);
+
+                    document.getElementById('previewLat').textContent = latitude;
+                    document.getElementById('previewLng').textContent = longitude;
+                    document.getElementById('previewAcc').textContent = accuracy;
+
+                    modalMessage.textContent = '请选择此位置的评级:';
+                    ratingOptions.style.display = 'flex';
+                    document.getElementById('locationPreview').style.display = 'block';
+                },
+                function (error) {
+                    let errorMessage = "获取位置时出错: ";
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += "用户拒绝了位置请求";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += "位置信息不可用";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += "获取位置请求超时";
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            errorMessage += "发生未知错误";
+                            break;
+                    }
+                    modalMessage.innerHTML = `<p class="text-red-500">${errorMessage}</p>`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('ratingModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // 选择评级
+        function selectRating(rating) {
+            selectedRating = rating;
+
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.classList.remove('selected-rating');
+            });
+            event.target.classList.add('selected-rating');
+
+            document.getElementById('confirmBtn').style.display = 'block';
+        }
+
+        // 保存带评级的位置
+        function saveLocationWithRating() {
+            if (!currentPosition || !selectedRating) return;
+
+            const latitude = currentPosition.coords.latitude.toFixed(6);
+            const longitude = currentPosition.coords.longitude.toFixed(6);
+            const accuracy = Math.round(currentPosition.coords.accuracy);
+            const timestamp = new Date().toLocaleString();
+
+            const newLocation = {
+                id: Date.now(),
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                accuracy: accuracy,
+                rating: selectedRating,
+                timestamp: timestamp
+            };
+
+            locationData.push(newLocation);
+            localStorage.setItem('locationData', JSON.stringify(locationData));
+            closeModal();
+            loadLocationData();
+
+            // 显示成功通知
+            showNotification('位置评级已成功保存', 'success');
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 transform transition-all duration-500 translate-y-[-20px] opacity-0`;
+
+            let bgColor, textColor, icon;
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-green-500';
+                    textColor = 'text-white';
+                    icon = 'fa-check-circle';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-500';
+                    textColor = 'text-white';
+                    icon = 'fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-500';
+                    textColor = 'text-white';
+                    icon = 'fa-exclamation-triangle';
+                    break;
+                default:
+                    bgColor = 'bg-blue-500';
+                    textColor = 'text-white';
+                    icon = 'fa-info-circle';
+            }
+
+            notification.classList.add(bgColor, textColor);
+            notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fa ${icon} mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+
+            document.body.appendChild(notification);
+
+            // 显示通知
+            setTimeout(() => {
+                notification.classList.remove('translate-y-[-20px]', 'opacity-0');
+            }, 10);
+
+            // 自动关闭
+            setTimeout(() => {
+                notification.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+
+        // 清空所有数据
+        function clearStorage() {
+            if (confirm('确定要清空所有位置数据吗？此操作不可撤销！')) {
+                locationData = [];
+                localStorage.removeItem('locationData');
+                loadLocationData();
+
+                if (radiusCircle) {
+                    map.removeLayer(radiusCircle);
+                    map.removeSource('radius-circle');
+                    radiusCircle = null;
+                }
+
+                // 隐藏柱状图
+                map.setLayoutProperty('bar-chart-layer', 'visibility', 'none');
+
+                showNotification('所有位置数据已清空', 'warning');
+            }
+        }
+
+        // 导出为Excel文件
+        function exportToExcel() {
+            try {
+                if (!locationData || locationData.length === 0) {
+                    showNotification('没有可导出的数据', 'warning');
+                    return;
+                }
+
+                const exportData = locationData.map((location, index) => ({
+                    '序号': index + 1,
+                    '纬度': location.latitude,
+                    '经度': location.longitude,
+                    '精确度(米)': location.accuracy,
+                    '评级': location.rating,
+                    '时间': location.timestamp
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "位置数据");
+
+                const fileName = `位置评级数据_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+
+                showNotification('数据已成功导出为Excel文件', 'success');
+            } catch (error) {
+                console.error('导出过程中出错:', error);
+                showNotification('导出失败: ' + error.message, 'error');
+            }
+        }
+
+        // 从Excel导入数据
+        function importFromExcel() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                console.warn('未选择文件');
+                showNotification('请选择一个文件', 'warning');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const importedData = XLSX.utils.sheet_to_json(sheet);
+
+                    if (!validateImportedData(importedData)) {
+                        showNotification('数据格式不正确，请确保包含 "纬度", "经度", "评级" 列', 'error');
+                        return;
+                    }
+
+                    locationData = importedData.map((item, index) => {
+                        const lat = parseFloat(item['纬度']);
+                        const lng = parseFloat(item['经度']);
+                        const rating = item['评级'] || 'C';
+                        const timestamp = item['时间'] || new Date().toLocaleString();
+                        const accuracy = item['精确度(米)'] || 50;
+
+                        return {
+                            id: Date.now() + index,
+                            latitude: lat,
+                            longitude: lng,
+                            accuracy: accuracy,
+                            rating: rating,
+                            timestamp: timestamp
+                        };
+                    });
+
+                    localStorage.setItem('locationData', JSON.stringify(locationData));
+                    loadLocationData();
+                    showNotification(`成功导入 ${locationData.length} 条数据`, 'success');
+
+                } catch (error) {
+                    console.error('导入过程中出错:', error);
+                    showNotification('导入失败: ' + error.message, 'error');
+                } finally {
+                    fileInput.value = '';
+                }
+            };
+
+            reader.onerror = function () {
+                console.error('文件读取失败');
+                showNotification('文件读取失败，请重试', 'error');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 验证导入数据的格式
+        function validateImportedData(data) {
+            return data.every(item => {
+                const hasRequiredFields = '纬度' in item && '经度' in item && '评级' in item;
+                if (!hasRequiredFields) return false;
+
+                const lat = parseFloat(item['纬度']);
+                const lng = parseFloat(item['经度']);
+                return !isNaN(lat) && !isNaN(lng) &&
+                    lat >= -90 && lat <= 90 &&
+                    lng >= -180 && lng <= 180;
+            });
+        }
+
+        // 初始化地图和UI
+        document.addEventListener('DOMContentLoaded', function () {
+            initMap();
+            updateToggleButtons();
+
+            // 为热力图滑块添加实时更新显示
+            document.getElementById('heatmapIntensity').addEventListener('input', function () {
+                document.getElementById('intensityValue').textContent = this.value;
+            });
+
+            document.getElementById('heatmapRadius').addEventListener('input', function () {
+                document.getElementById('radiusValue').textContent = this.value;
+            });
+
+            document.getElementById('heatmapOpacity').addEventListener('input', function () {
+                document.getElementById('opacityValue').textContent = this.value + '%';
+            });
+        });
+    </script>
+</body>
+</html>
